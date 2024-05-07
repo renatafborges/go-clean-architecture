@@ -38,11 +38,16 @@ func main() {
 	rabbitMQChannel := getRabbitMQChannel()
 
 	eventDispatcher := events.NewEventDispatcher()
+
 	eventDispatcher.Register("OrderCreated", &handler.OrderCreatedHandler{
+		RabbitMQChannel: rabbitMQChannel,
+	})
+	eventDispatcher.Register("OrderListed", &handler.OrderListedHandler{
 		RabbitMQChannel: rabbitMQChannel,
 	})
 
 	createOrderUseCase := NewCreateOrderUseCase(db, eventDispatcher)
+	//listOrderUseCase := NewListOrderUseCase(db, eventDispatcher)
 
 	webserver := webserver.NewWebServer(configs.WebServerPort)
 	webOrderHandler := NewWebOrderHandler(db, eventDispatcher)

@@ -2,17 +2,24 @@ package usecase
 
 import (
 	"github.com/devfullcycle/20-CleanArch/internal/entity"
+	"github.com/devfullcycle/20-CleanArch/pkg/events"
 )
 
 type ListOrderUseCase struct {
 	OrderRepository entity.OrderRepositoryInterface
+	OrderListed     events.EventListedInterface
+	EventDispatcher events.EventDispatcherInterface
 }
 
 func NewListOrderUseCase(
 	OrderRepository entity.OrderRepositoryInterface,
+	OrderListed events.EventListedInterface,
+	EventDispatcher events.EventDispatcherInterface,
 ) *ListOrderUseCase {
 	return &ListOrderUseCase{
 		OrderRepository: OrderRepository,
+		OrderListed:     OrderListed,
+		EventDispatcher: EventDispatcher,
 	}
 }
 
@@ -32,6 +39,9 @@ func (u *ListOrderUseCase) Execute() ([]OrderOutputDTO, error) {
 			FinalPrice: order.FinalPrice,
 		})
 	}
+
+	u.OrderListed.SetPayload(ordersOutput)
+	u.EventDispatcher.Dispatch(u.OrderListed)
 
 	return ordersOutput, nil
 }
